@@ -40,15 +40,15 @@ public class Solution {
         return this.crowding_distance;
     }
 
-    public static Comparator<Solution> OperatorFitness1 = new Comparator<Solution>() {
+    public static Comparator<Solution> OperatorFitnessValue = new Comparator<Solution>() {
 
         @Override
         public int compare(Solution s1, Solution s2) {
             int value = 0;
-            if (s1.getFitness1() > s2.getFitness1()) {
-                value = -1;
-            } else if(s1.getFitness1() < s2.getFitness1()){
+            if (s1.FitnessValue() > s2.FitnessValue()) {
                 value = 1;
+            } else if(s1.getFitness1() < s2.getFitness1()){
+                value = -1;
             } 
             else {
                 value = 0;

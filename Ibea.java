@@ -12,6 +12,7 @@ public class Ibea
     int NbPop;
     int Nbind;
     int NbObj;
+    int countGeneration; 
 
 
 
@@ -29,7 +30,7 @@ public class Ibea
     Solution[] Echantillon;
     Solution[] List;
 
-    NSGAII(String name, Integer nbpop, Integer nbind) {
+    Ibea(String name, Integer nbpop, Integer nbind) {
 
         this.Nbind = nbind;
         this.NbPop = nbpop;
@@ -142,24 +143,53 @@ public class Ibea
     }
 
 
+    void UpdateFitnessValue(){
+        int Nbindividuals = this.Population.length;
+        float sum; 
+        for(int i = 0; i < Nbindividuals; i++){
+            for(int j = 0; i < Nbindividuals; j++){
+                sum += -Math.Exp(this.Indicator_Matrix[j][i]);
+            }
 
-    void UpdateFitnessFunction(){
-        
+            this.Population[i].FitnessValue = sum + 1; 
+
+        }
+
+    }
+
+
+    void EnvironementalSelection(){
+        Arrays.sort(this.Population,Solution.OperatorFitnessValue);
+         Solution[] list_Population = new Solution[this.NbPop];
+        for(int i = 0; i < this.Nbpop; i++ ){
+            list_Population[i] = this.Population[i];
+        }
+
+        This.Population = list_Population;
+
     }
 
 
 
+    void UpdatePopulation(){
+        int nbtotal = nbpop + nbind;
+        Solution[] UpdateList = new Solution[nbpop + Nbind];
+        for(int i = 0; i < nbpop; i++){
+            UpdateList[i] = Population[i];
+        }
+        for(int j = nbpop; j < nbtotal; j++){
+            UpdateList[j] = Echantillon[j - nbpop];
 
+        }
 
-
-
-
-
-
-
-
-
-
+        this.Population = UpdateList;
+        this.countGeneration += 1;
+    }
+    
+    
+    
+    
+    
     void RepaireSample(Solution individual) {
         int compteur = 0;
         int indice;
@@ -477,83 +507,41 @@ public class Ibea
 
     }
 
-    void UpdateElitePopulation() {
-        int compteur = 0;
-        int indicefront = 0;
-        boolean Update = false;
-        int indiceVec = 0;
-        int comptList = 0;
-        int nbListInd = NbPop + Nbind;
-        this.List = new Solution[nbListInd];
-        Vector<Solution> partfront = new Vector<Solution>();
-        fitnessValueSample();
-        for (int i = 0; i < NbPop; i++) {
-            this.List[i] = this.Population[i];
-            System.out.println(this.List[i].Obj1);
-        }
-        for (int j = 0; j < this.Nbind; j++) {
-            this.List[j + this.NbPop] = this.Echantillon[j];
-            System.out.println(this.List[j].Obj1);
 
-        }
-        System.out.println("longueur: " + this.List.length);
 
-        System.out.println("partie rank");
-        this.rankList();
-        System.out.println("partie front");
 
-        this.definefrontlist();
-
-        System.out.println("partie crowding");
-
-        this.measureCrowdingDistance();
-        while (compteur < NbPop) {
-            partfront = Front.get(indicefront);
-            System.out.println("partie sort front");
-
-            Collections.sort(partfront, Solution.OperatorCrowdingDistance);
-            for (int k = 0; k < partfront.size(); k++) {
-                Population[compteur] = Front.get(indicefront).get(k);
-                compteur++;
-                if (compteur > NbPop - 1) {
-                    System.out.println("La génération est créée");
-                    break;
-                }
-            }
-            indicefront++;
-        }
-    }
+    
 
     void resolve(int Nbgen) {
+        int k = 0; 
+        this.countGeneration = 0;
         Random rand = new Random();
-        int nbCrossover;
-        this.compute_extreme_point();
         this.initPopulation();
         this.displayPopulation();
-        for (int i = 0; i < Nbgen; i++) {
+        while(this.countGeneration < Nbgen) {
             this.fitnessValuePop();
             System.out.println("fitness pop");
 
-            this.rankPopulation();
-            System.out.println("fitness rank");
+            this.BuildMatrixIndicator();
+            System.out.println("Matrix indicator built");
 
-            this.FrontPopulation();
-            System.out.println("fitness front");
+            this.UpdateFitnessValue();
+            System.out.println("Fitness value built");
 
-            this.Tournament();
+            this.EnvironementalSelection();
+            if(this.countGeneration > Nbgen - 1){
+                break; 
+            }
+            this.BinarysTournament();
             System.out.println("fitness tournoi");
-
-            /*
-             * nbCrossover = rand.nextInt(this.Nbind - 0) + 0;
-             * for(int k = 0; k < nbCrossover; k++){
-             * this.CrossoverMutation();
-             * 
-             * }
-             */
-            this.UpdateElitePopulation();
+            nbCrossover = rand.nextInt(this.Nbind - 0) + 0;
+              for(int i = 0; i < nbCrossover; i++){
+              this.CrossoverMutation();
+              }
+             
+            this.UpdatePopulation();
             System.out.println("La génération est créée");
         }
-        Arrays.sort(this.Population, Solution.OperatorFitness1);
         displayPopulation();
         System.out.println("terminé");
 
